@@ -1,0 +1,2 @@
+Sample command:
+python3 mission.py mission 2020-10-19_00:55:00 5 1000
