@@ -13,11 +13,10 @@ import sys
 # To be used in the scheduled job
 def take_image(mission_folder_path, timestamp, count, num):
     global flagDone
-    #name_image = mission_folder_path + '/' + 
-    #    str(timestamp) + "_" + str(count) + '.jpg'
+    name_image = mission_folder_path + '/' + str(timestamp) + "_" + str(count) + '.jpg'
     
     #placeholder name to allow windows to store
-    name_image = mission_folder_path + '/'+ str(count) +'.jpg'
+    #name_image = mission_folder_path + '/'+ str(count) +'.jpg'
     
     camera.capture(name_image)
     print(f'Image at {name_image} taken at {datetime.utcnow()}')
