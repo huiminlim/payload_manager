@@ -3,14 +3,29 @@ from datetime import datetime, date, timedelta
 from time import sleep
 import sys
 import os
+import serial
+
+
+# Total count executed
+count = 0
+total = 0
+done = False
 
 
 def mission_cmd():
+    global count, done
     print("Mission")
+    count += 1
+    if count == total:
+        done = True
 
 
 def download_cmd():
+    global count, done
     print("Download")
+    count += 1
+    if count == total:
+        done = True
 
 
 # Function processes the list of parsed timestamps to add job for
@@ -41,33 +56,47 @@ if __name__ == "__main__":
     # Initialize Scheduler in background
     scheduler = BackgroundScheduler()
 
-    cmd = sys.argv[1]
-    arg = sys.argv[2:]
-    timestamp_start = arg[0]  # Format: 2020-10-18_16:33:57
-    num = int(arg[1])
-    interval = int(arg[2])
-    print("Timestamp: %s" % timestamp_start)
-    print("Images to take: %s" % num)
-    print("Interval (ms): %s" % interval)
-
-    # Parse timestamp
-    list_ts = process_timestamp(timestamp_start)
-    start_dt = datetime(list_ts[0], list_ts[1],
-                        list_ts[2], list_ts[3], list_ts[4], list_ts[5])
-    list_ts_image = create_list_ts(start_dt, num, interval)
-
-    if cmd == 'mission':
-        for ts in list_ts_image:
-            scheduler.add_job(mission_cmd, next_run_time=ts)
-    if cmd == 'downlink':
-        for ts in list_ts_image:
-            scheduler.add_job(download_cmd, next_run_time=ts)
+    # Open Serial port to receive commands
+    ser = serial.Serial('/dev/serial0', baudrate=9600, timeout=1)
 
     # Start the scheduler
     scheduler.start()
-
     while True:
         try:
-            pass
+
+            # Format: cmd 2020-10-18_16:33:57 5 1000
+            data_read = ser.readline().decode('utf-8').rstrip()
+
+            cmd = data_read[0]
+            timestamp_start = data_read[1]
+            num = data_read[2]
+            interval = data_read[3]
+
+            #cmd = sys.argv[1]
+            #arg = sys.argv[2:]
+            # timestamp_start = arg[0]  # Format: 2020-10-18_16:33:57
+            #num = int(arg[1])
+            #interval = int(arg[2])
+            print("Command: %s" % cmd)
+            print("Timestamp: %s" % timestamp_start)
+            print("Images to take: %s" % num)
+            print("Interval (ms): %s" % interval)
+
+            # Parse timestamp
+            list_ts = process_timestamp(timestamp_start)
+            start_dt = datetime(list_ts[0], list_ts[1],
+                                list_ts[2], list_ts[3], list_ts[4], list_ts[5])
+            list_ts_image = create_list_ts(start_dt, num, interval)
+
+            total = num
+
+            if cmd == 'mission':
+                for ts in list_ts_image:
+                    scheduler.add_job(mission_cmd, next_run_time=ts)
+            if cmd == 'downlink':
+                for ts in list_ts_image:
+                    scheduler.add_job(download_cmd, next_run_time=ts)
+            # if done == True:
+            #    break
         except KeyboardInterrupt:
             print("End")
