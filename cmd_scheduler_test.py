@@ -38,7 +38,7 @@ def take_image(mission_folder_path, timestamp, count, num):
         str(timestamp) + "_" + str(count) + '.jpg'
 
     # placeholder name to allow windows to store
-    #name_image = mission_folder_path + '/'+ str(count) +'.jpg'
+    # name_image = mission_folder_path + '/'+ str(count) +'.jpg'
 
     camera.capture(name_image)
     print(f'Image at {name_image} taken at {datetime.utcnow()}')
@@ -83,6 +83,7 @@ if __name__ == "__main__":
 
     # Start the scheduler
     scheduler.start()
+
     while True:
         try:
 
@@ -94,11 +95,11 @@ if __name__ == "__main__":
             num = data_read[2]
             interval = data_read[3]
 
-            #cmd = sys.argv[1]
-            #arg = sys.argv[2:]
+            # cmd = sys.argv[1]
+            # arg = sys.argv[2:]
             # timestamp_start = arg[0]  # Format: 2020-10-18_16:33:57
-            #num = int(arg[1])
-            #interval = int(arg[2])
+            # num = int(arg[1])
+            # interval = int(arg[2])
             print("Command: %s" % cmd)
             print("Timestamp: %s" % timestamp_start)
             print("Images to take: %s" % num)
@@ -113,8 +114,19 @@ if __name__ == "__main__":
             total = num
 
             if cmd == 'mission':
+                # Create folder path part applicable for mission only
+                # Create Folder for mission
+                storage_path = '/home/pi/Desktop'
+                mission_folder_path = storage_path + '/' + timestamp_start
+                os.mkdir(mission_folder_path)
+                print("Mission directory created: %s" % mission_folder_path)
+
+                count = 0
                 for ts in list_ts_image:
-                    scheduler.add_job(mission_cmd, next_run_time=ts)
+                    count = count + 1
+                    scheduler.add_job(mission_cmd, next_run_time=ts, args=[
+                                      mission_folder_path, ts, count, num])
+
             if cmd == 'downlink':
                 for ts in list_ts_image:
                     scheduler.add_job(download_cmd, next_run_time=ts)
