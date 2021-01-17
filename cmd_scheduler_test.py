@@ -21,7 +21,7 @@ def mission_cmd(mission_folder_path, timestamp, count, num):
     #    done = True
 
     global done
-    take_image(mission_folder_path, timestamp)
+    take_image(mission_folder_path, timestamp, count)
     if count == num:
         done = True
 
@@ -29,7 +29,7 @@ def mission_cmd(mission_folder_path, timestamp, count, num):
 # Function takes a single image
 # Saves the image with a given name
 # To be used in the scheduled job
-def take_image(mission_folder_path, timestamp):  # , count, num):
+def take_image(mission_folder_path, timestamp, count):  # , count, num):
     #global flagDone
     name_image = mission_folder_path + '/' + \
         str(timestamp) + "_" + str(count) + '.jpg'
@@ -83,7 +83,8 @@ if __name__ == "__main__":
     # Open Serial port to receive commands
     # Blocking to wait forever for input
     ser = serial.Serial('/dev/serial0', baudrate=9600, timeout=None)
-
+    ser.flush()
+    
     # Initialize Camera
     camera = PiCamera()
 
@@ -136,8 +137,7 @@ if __name__ == "__main__":
                 count = 0
                 for ts in list_ts_image:
                     count = count + 1
-                    scheduler.add_job(mission_cmd, next_run_time=ts)
-                    # , args=[mission_folder_path, ts, count, num])
+                    scheduler.add_job(mission_cmd, next_run_time=ts, args=[mission_folder_path, ts, count, num])
 
             if cmd == 'downlink':
                 for ts in list_ts_image:
@@ -146,3 +146,4 @@ if __name__ == "__main__":
             #    break
         except KeyboardInterrupt:
             print("End, exiting")
+            exit()
