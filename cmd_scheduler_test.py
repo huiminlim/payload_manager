@@ -76,7 +76,8 @@ if __name__ == "__main__":
     scheduler = BackgroundScheduler()
 
     # Open Serial port to receive commands
-    ser = serial.Serial('/dev/serial0', baudrate=9600, timeout=1)
+    # Blocking to wait forever for input
+    ser = serial.Serial('/dev/serial0', baudrate=9600, timeout=None)
 
     # Initialize Camera
     camera = PiCamera()
@@ -88,28 +89,36 @@ if __name__ == "__main__":
         try:
 
             # Format: cmd 2020-10-18_16:33:57 5 1000
-            data_read = ser.readline().decode('utf-8').rstrip()
+            data_read = ser.readline().decode("utf-8").replace("\r\n", "")
+            print(data_read)
+            data_read = data_read.split(" ");
 
             cmd = data_read[0]
             timestamp_start = data_read[1]
             num = data_read[2]
             interval = data_read[3]
 
-            # cmd = sys.argv[1]
-            # arg = sys.argv[2:]
-            # timestamp_start = arg[0]  # Format: 2020-10-18_16:33:57
-            # num = int(arg[1])
-            # interval = int(arg[2])
             print("Command: %s" % cmd)
             print("Timestamp: %s" % timestamp_start)
             print("Images to take: %s" % num)
             print("Interval (ms): %s" % interval)
+
+
+            # cmd = sys.argv[1]
+            # arg = sys.argv[2:]
+            # timestamp_start = arg[0]  # Format: 2020-10-18_16:33:57
+            # 
+            # 
+
+            interval = int(interval)
+            num = int(num)
 
             # Parse timestamp
             list_ts = process_timestamp(timestamp_start)
             start_dt = datetime(list_ts[0], list_ts[1],
                                 list_ts[2], list_ts[3], list_ts[4], list_ts[5])
             list_ts_image = create_list_ts(start_dt, num, interval)
+            
 
             total = num
 
@@ -124,8 +133,8 @@ if __name__ == "__main__":
                 count = 0
                 for ts in list_ts_image:
                     count = count + 1
-                    scheduler.add_job(mission_cmd, next_run_time=ts, args=[
-                                      mission_folder_path, ts, count, num])
+                    scheduler.add_job(mission_cmd, next_run_time=ts)
+                    #, args=[mission_folder_path, ts, count, num])
 
             if cmd == 'downlink':
                 for ts in list_ts_image:
