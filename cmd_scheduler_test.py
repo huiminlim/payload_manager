@@ -8,32 +8,29 @@ import serial
 
 
 # Total count executed
-count = 0
-total = 0
+#count = 0
+#total = 0
 done = False
 
 
-def mission_cmd():
-    global count, done
-    print("Mission")
-    count += 1
-    if count == total:
-        done = True
+def mission_cmd(mission_folder_path, timestamp, count, num):
+    #global count
+    # print("Mission")
+    #count += 1
+    # if count == total:
+    #    done = True
 
-
-def download_cmd():
-    global count, done
-    print("Download")
-    count += 1
-    if count == total:
+    global done
+    take_image(mission_folder_path, timestamp)
+    if count == num:
         done = True
 
 
 # Function takes a single image
 # Saves the image with a given name
 # To be used in the scheduled job
-def take_image(mission_folder_path, timestamp, count, num):
-    global flagDone
+def take_image(mission_folder_path, timestamp):  # , count, num):
+    #global flagDone
     name_image = mission_folder_path + '/' + \
         str(timestamp) + "_" + str(count) + '.jpg'
 
@@ -43,8 +40,16 @@ def take_image(mission_folder_path, timestamp, count, num):
     camera.capture(name_image)
     print(f'Image at {name_image} taken at {datetime.utcnow()}')
 
-    if count == num:
-        flagDone = True
+    # if count == num:
+    #    flagDone = True
+
+
+def download_cmd():
+    global count, done
+    print("Download")
+    count += 1
+    if count == total:
+        done = True
 
 
 # Function processes the list of parsed timestamps to add job for
@@ -91,7 +96,7 @@ if __name__ == "__main__":
             # Format: cmd 2020-10-18_16:33:57 5 1000
             data_read = ser.readline().decode("utf-8").replace("\r\n", "")
             print(data_read)
-            data_read = data_read.split(" ");
+            data_read = data_read.split(" ")
 
             cmd = data_read[0]
             timestamp_start = data_read[1]
@@ -103,12 +108,11 @@ if __name__ == "__main__":
             print("Images to take: %s" % num)
             print("Interval (ms): %s" % interval)
 
-
             # cmd = sys.argv[1]
             # arg = sys.argv[2:]
             # timestamp_start = arg[0]  # Format: 2020-10-18_16:33:57
-            # 
-            # 
+            #
+            #
 
             interval = int(interval)
             num = int(num)
@@ -118,7 +122,6 @@ if __name__ == "__main__":
             start_dt = datetime(list_ts[0], list_ts[1],
                                 list_ts[2], list_ts[3], list_ts[4], list_ts[5])
             list_ts_image = create_list_ts(start_dt, num, interval)
-            
 
             total = num
 
@@ -134,7 +137,7 @@ if __name__ == "__main__":
                 for ts in list_ts_image:
                     count = count + 1
                     scheduler.add_job(mission_cmd, next_run_time=ts)
-                    #, args=[mission_folder_path, ts, count, num])
+                    # , args=[mission_folder_path, ts, count, num])
 
             if cmd == 'downlink':
                 for ts in list_ts_image:
