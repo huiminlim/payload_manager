@@ -1,5 +1,6 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, date, timedelta
+from picamera import PiCamera
 from time import sleep
 import sys
 import os
@@ -26,6 +27,24 @@ def download_cmd():
     count += 1
     if count == total:
         done = True
+
+
+# Function takes a single image
+# Saves the image with a given name
+# To be used in the scheduled job
+def take_image(mission_folder_path, timestamp, count, num):
+    global flagDone
+    name_image = mission_folder_path + '/' + \
+        str(timestamp) + "_" + str(count) + '.jpg'
+
+    # placeholder name to allow windows to store
+    #name_image = mission_folder_path + '/'+ str(count) +'.jpg'
+
+    camera.capture(name_image)
+    print(f'Image at {name_image} taken at {datetime.utcnow()}')
+
+    if count == num:
+        flagDone = True
 
 
 # Function processes the list of parsed timestamps to add job for
@@ -58,6 +77,9 @@ if __name__ == "__main__":
 
     # Open Serial port to receive commands
     ser = serial.Serial('/dev/serial0', baudrate=9600, timeout=1)
+
+    # Initialize Camera
+    camera = PiCamera()
 
     # Start the scheduler
     scheduler.start()
@@ -99,4 +121,4 @@ if __name__ == "__main__":
             # if done == True:
             #    break
         except KeyboardInterrupt:
-            print("End")
+            print("End, exiting")
