@@ -80,19 +80,22 @@ if __name__ == "__main__":
     # Initialize Scheduler in background
     scheduler = BackgroundScheduler()
 
-    # Open Serial port to receive commands
-    # Blocking to wait forever for input
-    ser = serial.Serial('/dev/serial0', baudrate=9600, timeout=None)
-    ser.flush()
-    
     # Initialize Camera
     camera = PiCamera()
 
     # Start the scheduler
     scheduler.start()
 
+    # Open Serial port to receive commands
+    # Blocking to wait forever for input
+    ser = serial.Serial('/dev/serial0', baudrate=9600, timeout=None)
+    ser.flush()
+
     while True:
         try:
+            # Clean up serial buffer
+            ser.reset_input_buffer()
+            ser.reset_output_buffer()
 
             # Format: cmd 2020-10-18_16:33:57 5 1000
             data_read = ser.readline().decode("utf-8").replace("\r\n", "")
@@ -137,7 +140,8 @@ if __name__ == "__main__":
                 count = 0
                 for ts in list_ts_image:
                     count = count + 1
-                    scheduler.add_job(mission_cmd, next_run_time=ts, args=[mission_folder_path, ts, count, num])
+                    scheduler.add_job(mission_cmd, next_run_time=ts, args=[
+                                      mission_folder_path, ts, count, num])
 
             if cmd == 'downlink':
                 for ts in list_ts_image:
