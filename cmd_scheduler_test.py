@@ -147,3 +147,9 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("End, exiting")
             exit()
+            
+        except UnicodeDecodeError:
+            print()
+            print("Error -- unicode decode error")
+            print("Did not manage to read command")
+            print()

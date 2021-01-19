@@ -10,3 +10,8 @@ while True:
     except KeyboardInterrupt:
         print("Close")
         ser.close()
+    except UnicodeDecodeError:
+        print()
+        print("Error -- unicode decode error")
+        print("Did not manage to read command")
+        print()
