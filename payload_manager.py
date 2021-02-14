@@ -47,14 +47,15 @@ def main():
     done = False
     while True:
         try:
-            
+
             # Clean up serial buffer
             ser_cmd_input.reset_input_buffer()
             ser_cmd_input.reset_output_buffer()
 
             # Format: cmd 2020-10-18_16:33:57 5 1000
             if done == False:
-                data_read = b'downlink 2021-02-14_18:37:00 2021-01-19_17:45:40 2021-01-19_17:47:40'.decode("utf-8").replace("\r\n", "") #ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
+                data_read = b'downlink 2021-02-14_18:37:00 2021-01-19_17:45:40 2021-01-19_17:47:40'.decode(
+                    "utf-8").replace("\r\n", "")  # ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
                 print(data_read)
             else:
                 data_read = "hello"
@@ -86,7 +87,7 @@ def main():
                 timestamp_start_downlink = process_timestamp(list_data_read[1])
                 timestamp_query_start = process_timestamp(list_data_read[2])
                 timestamp_query_end = process_timestamp(list_data_read[3])
-                
+
                 print()
 
                 # Obtain list of filepaths to images to downlink
@@ -95,7 +96,7 @@ def main():
 
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
                                   ser_downlink, filepath_list])
-                
+
                 done = True
 
         except KeyboardInterrupt:
@@ -113,9 +114,6 @@ def main():
         # Fall through exception -- just in case
 #         except Exception as ex:
 #             print(ex)
-
-
-
 
 
 def process_mission_command(data_read_list):
@@ -215,8 +213,8 @@ def download_cmd(ser_obj, filepath_list):
 
         # Call bash script to execute prep script
         # base64 + gzip
-        subprocess.call('./prep_test.sh test.jpg',
-                        stdout=subprocess.DEVNULL, shell=True)
+        prep_filepath = './prep_test.sh ' + file
+        subprocess.call(prep_filepath, stdout=subprocess.DEVNULL, shell=True)
 
         # Open and read in the image
         with open('base_enc.gz', 'rb') as file:
