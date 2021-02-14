@@ -22,4 +22,7 @@ end = process_timestamp('2021-01-19_17:48:00')
 
 
 for t in os.listdir('/home/pi/Desktop/Mission'):
-    print(start < process_timestamp(t) and process_timestamp(t) < end)
+    if start < process_timestamp(t) and process_timestamp(t) < end:
+        #print(os.listdir('/home/pi/Desktop/Mission' + '/' + t))
+        for file in os.listdir('/home/pi/Desktop/Mission' + '/' + t):
+            print('/home/pi/Desktop/Mission' + '/' + t + '/' + file)
