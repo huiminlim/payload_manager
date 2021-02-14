@@ -44,16 +44,21 @@ def main():
     # Open Serial port to downlink images
     ser_downlink = serial.Serial("/dev/ttyUSB0", baudrate=115200, timeout=10)
     ser_downlink.flush()
-
+    done = False
     while True:
         try:
+            
             # Clean up serial buffer
             ser_cmd_input.reset_input_buffer()
             ser_cmd_input.reset_output_buffer()
 
             # Format: cmd 2020-10-18_16:33:57 5 1000
-            data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
-            print(data_read)
+            if done == False:
+                data_read = b'downlink 2021-02-14_18:37:00 2021-01-19_17:45:40 2021-01-19_17:47:40'.decode("utf-8").replace("\r\n", "") #ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
+                print(data_read)
+            else:
+                data_read = "hello"
+
             list_data_read = data_read.split(" ")
 
             cmd = list_data_read[0]
@@ -77,8 +82,12 @@ def main():
 
             if cmd == 'downlink':
                 # Process all 3 timestamps
-                timestamp_start_downlink, timestamp_query_start, timestamp_query_end = process_downlink_command(
-                    list_data_read)
+                print(list_data_read)
+                timestamp_start_downlink = process_timestamp(list_data_read[1])
+                timestamp_query_start = process_timestamp(list_data_read[2])
+                timestamp_query_end = process_timestamp(list_data_read[3])
+                
+                print()
 
                 # Obtain list of filepaths to images to downlink
                 filepath_list = process_downlink_filepaths(
@@ -86,9 +95,13 @@ def main():
 
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
                                   ser_downlink, filepath_list])
+                
+                done = True
 
         except KeyboardInterrupt:
             print("End, exiting")
+            scheduler.shutdown()
+            camera_obj.close()
             exit()
 
         except UnicodeDecodeError:
@@ -98,12 +111,11 @@ def main():
             print()
 
         # Fall through exception -- just in case
-        except Exception as ex:
-            print(ex)
+#         except Exception as ex:
+#             print(ex)
 
 
-if __name__ == "__main__":
-    main()
+
 
 
 def process_mission_command(data_read_list):
@@ -178,14 +190,16 @@ def process_downlink_command(data_read_list):
     timestamp_downlink = process_timestamp(data_read_list[1])
     timestamp_query_start = process_timestamp(data_read_list[2])
     timestamp_query_end = process_timestamp(data_read_list[3])
-    return timestamp_downlink, timestamp_query_start, timestamp_query_end
+    return [timestamp_downlink, timestamp_query_start, timestamp_query_end]
 
 
+# Receive timestamp in plaintext
 def process_downlink_filepaths(start_timestamp, end_timestamp):
     list_filepaths = []
 
     for timestamp in os.listdir(MISSION_ROOT_FILEPATH):
         processed_timestamp = process_timestamp(timestamp)
+        print(timestamp)
         if start_timestamp < processed_timestamp and processed_timestamp < end_timestamp:
             for file in os.listdir(MISSION_ROOT_FILEPATH + '/' + timestamp):
                 list_filepaths.append(
@@ -195,6 +209,7 @@ def process_downlink_filepaths(start_timestamp, end_timestamp):
 
 
 def download_cmd(ser_obj, filepath_list):
+    print(filepath_list)
 
     for file in filepath_list:
 
@@ -425,3 +440,7 @@ def split_batch(chunks_arr, batch_size):
     batch_arr.append(chunks_arr[idx:])
 
     return batch_arr
+
+
+if __name__ == "__main__":
+    main()
