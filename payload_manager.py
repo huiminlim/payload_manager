@@ -53,12 +53,7 @@ def main():
             ser_cmd_input.reset_output_buffer()
 
             # Format: cmd 2020-10-18_16:33:57 5 1000
-            if done == False:
-                data_read = b'downlink 2021-02-14_18:37:00 2021-01-19_17:45:40 2021-01-19_17:47:40'.decode(
-                    "utf-8").replace("\r\n", "")  # ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
-                print(data_read)
-            else:
-                data_read = "hello"
+            data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
 
             list_data_read = data_read.split(" ")
 
@@ -71,7 +66,7 @@ def main():
                 # Create folder path part applicable for mission only
                 # Create Folder for mission
                 storage_path = MISSION_ROOT_FILEPATH
-                mission_folder_path = storage_path + '/' + timestamp_start
+                mission_folder_path = storage_path + '/' + timestamp_start.replace(" ", "_")
                 os.mkdir(mission_folder_path)
                 print("Mission directory created: %s" % mission_folder_path)
 
@@ -83,7 +78,6 @@ def main():
 
             if cmd == 'downlink':
                 # Process all 3 timestamps
-                print(list_data_read)
                 timestamp_start_downlink = process_timestamp(list_data_read[1])
                 timestamp_query_start = process_timestamp(list_data_read[2])
                 timestamp_query_end = process_timestamp(list_data_read[3])
@@ -96,8 +90,6 @@ def main():
 
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
                                   ser_downlink, filepath_list])
-
-                done = True
 
         except KeyboardInterrupt:
             print("End, exiting")
@@ -194,14 +186,19 @@ def process_downlink_command(data_read_list):
 # Receive timestamp in plaintext
 def process_downlink_filepaths(start_timestamp, end_timestamp):
     list_filepaths = []
+    
+    list_dir_mission = os.listdir(MISSION_ROOT_FILEPATH)
 
-    for timestamp in os.listdir(MISSION_ROOT_FILEPATH):
-        processed_timestamp = process_timestamp(timestamp)
-        print(timestamp)
+    for mission_timestamp in list_dir_mission:
+        
+        processed_timestamp = process_timestamp(mission_timestamp)
+        
         if start_timestamp < processed_timestamp and processed_timestamp < end_timestamp:
-            for file in os.listdir(MISSION_ROOT_FILEPATH + '/' + timestamp):
+            
+            for file in os.listdir(MISSION_ROOT_FILEPATH + '/' + mission_timestamp):
+                
                 list_filepaths.append(
-                    MISSION_ROOT_FILEPATH + '/' + timestamp + '/' + file)
+                    MISSION_ROOT_FILEPATH + '/' + mission_timestamp + '/' + file)
 
     return list_filepaths
 
