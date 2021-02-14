@@ -39,23 +39,19 @@ def main():
     # Open Serial port to receive commands
     # Blocking to wait forever for input
     ser_cmd_input = serial.Serial('/dev/serial0', baudrate=9600, timeout=None)
-    ser_cmd_input.flush()
 
     # Open Serial port to downlink images
     ser_downlink = serial.Serial("/dev/ttyUSB0", baudrate=115200, timeout=10)
-    ser_downlink.flush()
-    done = False
+
     while True:
         try:
-
-            # Clean up serial buffer
-            ser_cmd_input.reset_input_buffer()
-            ser_cmd_input.reset_output_buffer()
-
             # Format: cmd 2020-10-18_16:33:57 5 1000
             data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
+            #data_read = b'downlink 2021-02-14_22:58:00 2021-01-19_17:45:40 2021-01-19_17:47:40'.decode("utf-8").replace("\r\n", "")
 
             list_data_read = data_read.split(" ")
+            
+            print(list_data_read)
 
             cmd = list_data_read[0]
 
@@ -90,6 +86,9 @@ def main():
 
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
                                   ser_downlink, filepath_list])
+                
+            while True:
+                pass
 
         except KeyboardInterrupt:
             print("End, exiting")
@@ -250,7 +249,7 @@ def download_cmd(ser_obj, filepath_list):
             print()
 
         # Pause before next image send
-        time.sleep(0.4)
+        time.sleep(15)
 
 #####
 
