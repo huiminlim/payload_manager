@@ -51,7 +51,7 @@ def main():
 
             list_data_read = data_read.split(" ")
 
-            # print(list_data_read)
+            print(list_data_read)
 
             cmd = list_data_read[0]
 
