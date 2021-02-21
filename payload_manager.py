@@ -72,7 +72,7 @@ def main():
                 count = 0
                 for ts in list_ts_image:
                     count = count + 1
-                    scheduler.add_job(mission_cmd, run_date=datetime_obj, args=[
+                    scheduler.add_job(mission_cmd, run_date=ts, args=[
                                       camera, mission_folder_path, ts, count, num])
 
             if cmd == 'd':
