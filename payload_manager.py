@@ -56,22 +56,24 @@ def main():
             cmd = list_data_read[0]
 
             if cmd == 'm':
-                timestamp_start, num, list_ts_image = process_mission_command(
+                datetime_obj, timestamp_start_string, num, list_ts_image = process_mission_command(
                     list_data_read)
+                
+                print(list_ts_image)
 
                 # Create folder path part applicable for mission only
                 # Create Folder for mission
                 storage_path = MISSION_ROOT_FILEPATH
                 mission_folder_path = storage_path + \
-                    '/' + timestamp_start.replace(" ", "_")
+                    '/' + timestamp_start_string.replace(" ", "_")
                 os.mkdir(mission_folder_path)
                 print("Mission directory created: %s" % mission_folder_path)
 
                 count = 0
                 for ts in list_ts_image:
                     count = count + 1
-                    scheduler.add_job(mission_cmd, next_run_time=timestamp_start, args=[
-                                      camera_obj, mission_folder_path, timestamp_start, count, num])
+                    scheduler.add_job(mission_cmd, next_run_time=datetime_obj, args=[
+                                      camera_obj, mission_folder_path, timestamp_start_string, count, num])
 
             if cmd == 'd':
                 # Process all 3 timestamps
@@ -135,7 +137,7 @@ def process_mission_command(data_read_list):
 
     list_ts_image = create_list_ts(start_dt, num, interval)
 
-    return timestamp_start, num, list_ts_image
+    return start_dt, timestamp_start, num, list_ts_image
 
 
 def mission_cmd(camera_obj, mission_folder_path, timestamp, count, num):
