@@ -8,8 +8,6 @@ import serial
 
 done = False
 
-camera = None
-
 #### DOWNLINK CONSTANTS ####
 CHUNK_SIZE = 168
 BATCH_SIZE = 300
@@ -28,7 +26,6 @@ MISSION_ROOT_FILEPATH = '/home/pi/Desktop/Mission'
 
 
 def main():
-    global camera
 
     # Initialize Scheduler in background
     scheduler = BackgroundScheduler()
@@ -149,7 +146,6 @@ def mission_cmd(mission_folder_path, timestamp, count, num):
     # Saves the image with a given name
     # To be used in the scheduled job
     def take_image(mission_folder_path, timestamp, count):
-        global camera
         name_image = mission_folder_path + '/' + \
             str(timestamp) + "_" + str(count) + '.jpg'
 
@@ -160,7 +156,11 @@ def mission_cmd(mission_folder_path, timestamp, count, num):
         print(f'Image at {name_image} taken at {datetime.utcnow()}')
 
     global done
-    take_image(mission_folder_path, timestamp, count)
+    # take_image(mission_folder_path, timestamp, count)
+    name_image = mission_folder_path + '/' + \
+        str(timestamp) + "_" + str(count) + '.jpg'
+    camera.capture(name_image)
+    print(f'Image at {name_image} taken at {datetime.utcnow()}')
     if count == num:
         done = True
 
