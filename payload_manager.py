@@ -51,7 +51,7 @@ def main():
 
             list_data_read = data_read.split(" ")
 
-            print(list_data_read)
+            # print(list_data_read)
 
             cmd = list_data_read[0]
 
@@ -59,7 +59,7 @@ def main():
                 datetime_obj, timestamp_start_string, num, list_ts_image = process_mission_command(
                     list_data_read)
 
-                print(list_ts_image)
+                # print(list_ts_image)
 
                 # Create folder path part applicable for mission only
                 # Create Folder for mission
@@ -160,6 +160,8 @@ def mission_cmd(cam, mission_folder_path, timestamp, count, num):
     print(f'Image at {name_image} taken at {datetime.utcnow()}')
     if count == num:
         done = True
+
+    print()
 
 
 def process_timestamp(timestamp):
