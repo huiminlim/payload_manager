@@ -90,9 +90,6 @@ def main():
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
                                   ser_downlink, filepath_list])
 
-            while True:
-                pass
-
         except KeyboardInterrupt:
             print("End, exiting")
             scheduler.shutdown()
