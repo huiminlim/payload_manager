@@ -50,19 +50,20 @@ def main():
             #data_read = b'downlink 2021-02-14_22:58:00 2021-01-19_17:45:40 2021-01-19_17:47:40'.decode("utf-8").replace("\r\n", "")
 
             list_data_read = data_read.split(" ")
-            
+
             print(list_data_read)
 
             cmd = list_data_read[0]
 
-            if cmd == 'mission':
+            if cmd == 'm':
                 timestamp_start, num, list_ts_image = process_mission_command(
                     list_data_read)
 
                 # Create folder path part applicable for mission only
                 # Create Folder for mission
                 storage_path = MISSION_ROOT_FILEPATH
-                mission_folder_path = storage_path + '/' + timestamp_start.replace(" ", "_")
+                mission_folder_path = storage_path + \
+                    '/' + timestamp_start.replace(" ", "_")
                 os.mkdir(mission_folder_path)
                 print("Mission directory created: %s" % mission_folder_path)
 
@@ -72,7 +73,7 @@ def main():
                     scheduler.add_job(mission_cmd, next_run_time=timestamp_start, args=[
                                       camera_obj, mission_folder_path, timestamp_start, count, num])
 
-            if cmd == 'downlink':
+            if cmd == 'd':
                 # Process all 3 timestamps
                 timestamp_start_downlink = process_timestamp(list_data_read[1])
                 timestamp_query_start = process_timestamp(list_data_read[2])
@@ -86,7 +87,7 @@ def main():
 
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
                                   ser_downlink, filepath_list])
-                
+
             while True:
                 pass
 
@@ -185,17 +186,17 @@ def process_downlink_command(data_read_list):
 # Receive timestamp in plaintext
 def process_downlink_filepaths(start_timestamp, end_timestamp):
     list_filepaths = []
-    
+
     list_dir_mission = os.listdir(MISSION_ROOT_FILEPATH)
 
     for mission_timestamp in list_dir_mission:
-        
+
         processed_timestamp = process_timestamp(mission_timestamp)
-        
+
         if start_timestamp < processed_timestamp and processed_timestamp < end_timestamp:
-            
+
             for file in os.listdir(MISSION_ROOT_FILEPATH + '/' + mission_timestamp):
-                
+
                 list_filepaths.append(
                     MISSION_ROOT_FILEPATH + '/' + mission_timestamp + '/' + file)
 
