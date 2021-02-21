@@ -8,6 +8,8 @@ import serial
 
 done = False
 
+camera = None
+
 #### DOWNLINK CONSTANTS ####
 CHUNK_SIZE = 168
 BATCH_SIZE = 300
@@ -26,12 +28,13 @@ MISSION_ROOT_FILEPATH = '/home/pi/Desktop/Mission'
 
 
 def main():
+    global camera
 
     # Initialize Scheduler in background
     scheduler = BackgroundScheduler()
 
     # Initialize Camera
-    camera_obj = PiCamera()
+    camera = PiCamera()
 
     # Start the scheduler
     scheduler.start()
@@ -47,7 +50,7 @@ def main():
         try:
             # Format: cmd 2020-10-18_16:33:57 5 1000
             data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
-            #data_read = b'downlink 2021-02-14_22:58:00 2021-01-19_17:45:40 2021-01-19_17:47:40'.decode("utf-8").replace("\r\n", "")
+            # data_read = b'downlink 2021-02-14_22:58:00 2021-01-19_17:45:40 2021-01-19_17:47:40'.decode("utf-8").replace("\r\n", "")
 
             list_data_read = data_read.split(" ")
 
@@ -58,7 +61,7 @@ def main():
             if cmd == 'm':
                 datetime_obj, timestamp_start_string, num, list_ts_image = process_mission_command(
                     list_data_read)
-                
+
                 print(list_ts_image)
 
                 # Create folder path part applicable for mission only
@@ -73,7 +76,7 @@ def main():
                 for ts in list_ts_image:
                     count = count + 1
                     scheduler.add_job(mission_cmd, next_run_time=datetime_obj, args=[
-                                      camera_obj, mission_folder_path, timestamp_start_string, count, num])
+                                      mission_folder_path, timestamp_start_string, count, num])
 
             if cmd == 'd':
                 # Process all 3 timestamps
@@ -96,7 +99,7 @@ def main():
         except KeyboardInterrupt:
             print("End, exiting")
             scheduler.shutdown()
-            camera_obj.close()
+            # camera.close()
             exit()
 
         except UnicodeDecodeError:
@@ -140,23 +143,24 @@ def process_mission_command(data_read_list):
     return start_dt, timestamp_start, num, list_ts_image
 
 
-def mission_cmd(camera_obj, mission_folder_path, timestamp, count, num):
+def mission_cmd(mission_folder_path, timestamp, count, num):
 
     # Function takes a single image
     # Saves the image with a given name
     # To be used in the scheduled job
-    def take_image(camera_obj, mission_folder_path, timestamp, count):
+    def take_image(mission_folder_path, timestamp, count):
+        global camera
         name_image = mission_folder_path + '/' + \
             str(timestamp) + "_" + str(count) + '.jpg'
 
         # placeholder name to allow windows to store
         # name_image = mission_folder_path + '/'+ str(count) +'.jpg'
 
-        camera_obj.capture(name_image)
+        camera.capture(name_image)
         print(f'Image at {name_image} taken at {datetime.utcnow()}')
 
     global done
-    take_image(camera_obj, mission_folder_path, timestamp, count)
+    take_image(mission_folder_path, timestamp, count)
     if count == num:
         done = True
 
