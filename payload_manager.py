@@ -73,7 +73,7 @@ def main():
                 for ts in list_ts_image:
                     count = count + 1
                     scheduler.add_job(mission_cmd, next_run_time=datetime_obj, args=[
-                                      mission_folder_path, timestamp_start_string, count, num])
+                                      camera, mission_folder_path, ts, count, num])
 
             if cmd == 'd':
                 # Process all 3 timestamps
@@ -140,7 +140,7 @@ def process_mission_command(data_read_list):
     return start_dt, timestamp_start, num, list_ts_image
 
 
-def mission_cmd(mission_folder_path, timestamp, count, num):
+def mission_cmd(cam, mission_folder_path, timestamp, count, num):
 
     # Function takes a single image
     # Saves the image with a given name
@@ -152,14 +152,14 @@ def mission_cmd(mission_folder_path, timestamp, count, num):
         # placeholder name to allow windows to store
         # name_image = mission_folder_path + '/'+ str(count) +'.jpg'
 
-        camera.capture(name_image)
+        cam.capture(name_image)
         print(f'Image at {name_image} taken at {datetime.utcnow()}')
 
     global done
     # take_image(mission_folder_path, timestamp, count)
     name_image = mission_folder_path + '/' + \
         str(timestamp) + "_" + str(count) + '.jpg'
-    camera.capture(name_image)
+    cam.capture(name_image)
     print(f'Image at {name_image} taken at {datetime.utcnow()}')
     if count == num:
         done = True
