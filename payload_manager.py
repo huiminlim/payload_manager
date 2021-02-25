@@ -207,7 +207,10 @@ def process_downlink_filepaths(start_timestamp, end_timestamp):
 
 
 def download_cmd(ser_obj, filepath_list):
+    curr_img_count = 0
+    total_img = len(filepath_list)
     for file in filepath_list:
+        curr_img_count = curr_img_count + 1
 
         # Call bash script to execute prep script
         # base64 + gzip
@@ -234,7 +237,7 @@ def download_cmd(ser_obj, filepath_list):
 
         # Send start packet
         start_packet = ccsds_create_downlink_start_packet(
-            TELEMETRY_PACKET_TYPE_DOWNLINK_START, total_bytes_retrieved, total_chunks, total_batch)
+            TELEMETRY_PACKET_TYPE_DOWNLINK_START, total_bytes_retrieved, total_chunks, total_batch, total_img, curr_img_count)
         ser_obj.write(start_packet)
         time.sleep(TIME_SLEEP_AFTER_START)
 
@@ -312,7 +315,7 @@ def ccsds_create_packet_header(source_data_len):
 
 # Function to create a start packet for downlink
 # Format: | CCSDS Primary header | Telemetry Packet Type | Total Bytes | Total Chunks to send |
-def ccsds_create_downlink_start_packet(telemetry_packet_type, total_bytes, total_chunks, total_batch):
+def ccsds_create_downlink_start_packet(telemetry_packet_type, total_bytes, total_chunks, total_batch, total_images, curr_image_count):
 
     TOTAL_BYTES_LENGTH = 3  # Bytes
     TOTAL_CHUNKS_LENGTH = 3
@@ -330,6 +333,12 @@ def ccsds_create_downlink_start_packet(telemetry_packet_type, total_bytes, total
     packet = packet + ccsds_header
 
     # Append bytes to packet
+    packet = packet + \
+        telemetry_packet_type.to_bytes(total_images, 'big')
+
+    packet = packet + \
+        telemetry_packet_type.to_bytes(curr_image_count, 'big')
+
     packet = packet + \
         telemetry_packet_type.to_bytes(TELEMETRY_TYPE_LENGTH, 'big')
 
