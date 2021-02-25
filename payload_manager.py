@@ -155,7 +155,7 @@ def mission_cmd(cam, mission_folder_path, timestamp, count, num):
     global done
     # take_image(mission_folder_path, timestamp, count)
     name_image = mission_folder_path + '/' + \
-        str(timestamp) + "_" + str(count) + '.jpg'
+        str(timestamp).replace(" ", "_") + "_" + str(count) + '.jpg'
     cam.capture(name_image)
     print(f'Image at {name_image} taken at {datetime.utcnow()}')
     if count == num:
