@@ -212,6 +212,8 @@ def download_cmd(ser_obj, filepath_list):
     for file in filepath_list:
         curr_img_count = curr_img_count + 1
 
+        print(f"Current image count: {curr_img_count} of {total_img}")
+
         # Call bash script to execute prep script
         # base64 + gzip
         prep_filepath = './prep_test.sh ' + file
