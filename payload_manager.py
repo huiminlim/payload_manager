@@ -61,8 +61,11 @@ def main():
                 # Create folder path part applicable for mission only
                 # Create Folder for mission
                 storage_path = MISSION_ROOT_FILEPATH
-                mission_folder_path = storage_path + \
-                    '/' + timestamp_start_string.replace(" ", "_")
+                # mission_folder_path = storage_path + \
+                #     '/' + timestamp_start_string.replace(" ", "_")
+
+                mission_folder_path = storage_path + '/' + \
+                    datetime_obj.strftime("%Y-%m-%d_%H:%M:%S")
                 os.mkdir(mission_folder_path)
                 print("Mission directory created: %s" % mission_folder_path)
 
