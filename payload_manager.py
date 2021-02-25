@@ -334,10 +334,10 @@ def ccsds_create_downlink_start_packet(telemetry_packet_type, total_bytes, total
 
     # Append bytes to packet
     packet = packet + \
-        telemetry_packet_type.to_bytes(total_images, 'big')
+        total_images.to_bytes(1, 'big')
 
     packet = packet + \
-        telemetry_packet_type.to_bytes(curr_image_count, 'big')
+        curr_image_count.to_bytes(1, 'big')
 
     packet = packet + \
         telemetry_packet_type.to_bytes(TELEMETRY_TYPE_LENGTH, 'big')
