@@ -144,7 +144,7 @@ def mission_cmd(cam, mission_folder_path, timestamp, count, num):
     # To be used in the scheduled job
     def take_image(mission_folder_path, timestamp, count):
         name_image = mission_folder_path + '/' + \
-            str(timestamp) + "_" + str(count) + '.jpg'
+            str(timestamp).replace(" ", "_") + "_" + str(count) + '.jpg'
 
         # placeholder name to allow windows to store
         # name_image = mission_folder_path + '/'+ str(count) +'.jpg'
