@@ -47,7 +47,6 @@ def main():
         try:
             # Format: cmd 2020-10-18_16:33:57 5 1000
             data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
-            # data_read = b'downlink 2021-02-14_22:58:00 2021-01-19_17:45:40 2021-01-19_17:47:40'.decode("utf-8").replace("\r\n", "")
 
             list_data_read = data_read.split(" ")
 
