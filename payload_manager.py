@@ -254,7 +254,7 @@ def download_cmd(ser_obj, filepath_list):
             print()
 
         # Pause before next image send
-        time.sleep(15)
+        time.sleep(16)
 
 #####
 
