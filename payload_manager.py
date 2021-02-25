@@ -58,8 +58,6 @@ def main():
                 datetime_obj, timestamp_start_string, num, list_ts_image = process_mission_command(
                     list_data_read)
 
-                # print(list_ts_image)
-
                 # Create folder path part applicable for mission only
                 # Create Folder for mission
                 storage_path = MISSION_ROOT_FILEPATH
@@ -208,8 +206,6 @@ def process_downlink_filepaths(start_timestamp, end_timestamp):
 
 
 def download_cmd(ser_obj, filepath_list):
-    print(filepath_list)
-
     for file in filepath_list:
 
         # Call bash script to execute prep script
