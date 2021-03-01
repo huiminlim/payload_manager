@@ -32,6 +32,7 @@ def main():
 
     # Initialize Camera
     camera = PiCamera()
+    camera.resolution = (640, 480)
 
     # Start the scheduler
     scheduler.start()
@@ -139,28 +140,16 @@ def process_mission_command(data_read_list):
 
 def mission_cmd(cam, mission_folder_path, timestamp, count, num):
 
-    # Function takes a single image
-    # Saves the image with a given name
-    # To be used in the scheduled job
-    def take_image(mission_folder_path, timestamp, count):
-        name_image = mission_folder_path + '/' + \
-            str(timestamp).replace(" ", "_") + "_" + str(count) + '.jpg'
-
-        # placeholder name to allow windows to store
-        # name_image = mission_folder_path + '/'+ str(count) +'.jpg'
-
-        cam.capture(name_image)
-        print(f'Image at {name_image} taken at {datetime.utcnow()}')
+    # placeholder name to allow windows to store
+    # name_image = mission_folder_path + '/'+ str(count) +'.jpg'
 
     global done
-    # take_image(mission_folder_path, timestamp, count)
     name_image = mission_folder_path + '/' + \
         str(timestamp).replace(" ", "_") + "_" + str(count) + '.jpg'
-    cam.capture(name_image)
+    cam.capture(name_image, size=(640, 480))
     print(f'Image at {name_image} taken at {datetime.utcnow()}')
     if count == num:
         done = True
-
     print()
 
 
