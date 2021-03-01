@@ -135,7 +135,7 @@ def process_mission_command(data_read_list):
 def mission_cmd(cam, mission_folder_path, timestamp, count, num):
     name_image = mission_folder_path + '/' + \
         str(timestamp).replace(" ", "_") + "_" + str(count) + '.jpg'
-    cam.capture(name_image, size=(640, 480))
+    cam.capture(name_image, resize=(640, 480))
     print(f'Image at {name_image} taken at {datetime.utcnow()}')
     print()
 
