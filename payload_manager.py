@@ -28,12 +28,12 @@ def main():
     # Initialize Scheduler in background
     scheduler = BackgroundScheduler()
 
+    # Start the scheduler
+    scheduler.start()
+
     # Initialize Camera
     camera = PiCamera()
     camera.resolution = (640, 480)
-
-    # Start the scheduler
-    scheduler.start()
 
     # Open Serial port to receive commands
     # Blocking to wait forever for input
