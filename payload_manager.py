@@ -6,11 +6,11 @@ import subprocess
 import os
 import serial
 
-done = False
+MISSION_ROOT_FILEPATH = '/home/pi/Desktop/Mission'
 
 #### DOWNLINK CONSTANTS ####
-CHUNK_SIZE = 176
-BATCH_SIZE = 300
+CHUNK_SIZE = 179
+BATCH_SIZE = 200
 TIME_SLEEP_AFTER_START = 0.09
 TIME_SLEEP_AFTER_END = 1.5
 TIME_LONG_DELAY = 0.046
@@ -21,8 +21,6 @@ TELEMETRY_PACKET_TYPE_DOWNLINK_PACKET = 31
 
 packet_count = 0
 #### ------------------ ####
-
-MISSION_ROOT_FILEPATH = '/home/pi/Desktop/Mission'
 
 
 def main():
@@ -46,7 +44,6 @@ def main():
 
     while True:
         try:
-            # Format: cmd 2020-10-18_16:33:57 5 1000
             data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
 
             list_data_read = data_read.split(" ")
@@ -56,14 +53,12 @@ def main():
             cmd = list_data_read[0]
 
             if cmd == 'm':
-                datetime_obj, timestamp_start_string, num, list_ts_image = process_mission_command(
+                datetime_obj, num, list_ts_image = process_mission_command(
                     list_data_read)
 
                 # Create folder path part applicable for mission only
                 # Create Folder for mission
                 storage_path = MISSION_ROOT_FILEPATH
-                # mission_folder_path = storage_path + \
-                #     '/' + timestamp_start_string.replace(" ", "_")
 
                 mission_folder_path = storage_path + '/' + \
                     datetime_obj.strftime("%Y-%m-%d_%H:%M:%S")
@@ -82,8 +77,6 @@ def main():
                 timestamp_query_start = process_timestamp(list_data_read[2])
                 timestamp_query_end = process_timestamp(list_data_read[3])
 
-                print()
-
                 # Obtain list of filepaths to images to downlink
                 filepath_list = process_downlink_filepaths(
                     timestamp_query_start, timestamp_query_end)
@@ -94,7 +87,7 @@ def main():
         except KeyboardInterrupt:
             print("End, exiting")
             scheduler.shutdown()
-            # camera.close()
+            camera.close()
             exit()
 
         except UnicodeDecodeError:
@@ -115,7 +108,8 @@ def process_mission_command(data_read_list):
         # Function to parse timestamp
         ls = [dt]
         curr_dt = dt
-        for n in range(num-1):
+        # Repeat creation of incremental dt
+        for num_dt in range(num-1):
             ls.append(curr_dt + timedelta(milliseconds=interval))
             curr_dt = curr_dt + timedelta(milliseconds=interval)
         return ls
@@ -135,21 +129,14 @@ def process_mission_command(data_read_list):
 
     list_ts_image = create_list_ts(start_dt, num, interval)
 
-    return start_dt, timestamp_start, num, list_ts_image
+    return start_dt, num, list_ts_image
 
 
 def mission_cmd(cam, mission_folder_path, timestamp, count, num):
-
-    # placeholder name to allow windows to store
-    # name_image = mission_folder_path + '/'+ str(count) +'.jpg'
-
-    global done
     name_image = mission_folder_path + '/' + \
         str(timestamp).replace(" ", "_") + "_" + str(count) + '.jpg'
     cam.capture(name_image, size=(640, 480))
     print(f'Image at {name_image} taken at {datetime.utcnow()}')
-    if count == num:
-        done = True
     print()
 
 
@@ -220,7 +207,6 @@ def download_cmd(ser_obj, filepath_list):
 
         # Process the bytes into batches of chunks to be sent out
         chunk_list = chop_bytes(compressed_enc, CHUNK_SIZE)
-        total_chunks = len(chunk_list)
 
         # Split chunks into batch according to a batch size
         batch_list = split_batch(chunk_list, BATCH_SIZE)
@@ -228,7 +214,7 @@ def download_cmd(ser_obj, filepath_list):
 
         # Send start packet
         start_packet = ccsds_create_downlink_start_packet(
-            TELEMETRY_PACKET_TYPE_DOWNLINK_START, total_bytes_retrieved, total_chunks, total_batch, total_img, curr_img_count)
+            TELEMETRY_PACKET_TYPE_DOWNLINK_START, total_bytes_retrieved, total_batch)
         ser_obj.write(start_packet)
         time.sleep(TIME_SLEEP_AFTER_START)
 
@@ -239,13 +225,13 @@ def download_cmd(ser_obj, filepath_list):
             current_batch = current_batch + 1
 
             # Begin batch send
-            batch_send(ser_obj, batch, TIME_SHORT_DELAY, TIME_LONG_DELAY,
-                       total_bytes_retrieved, total_chunks, total_batch, current_batch)
+            batch_send(ser_obj, batch, TIME_SHORT_DELAY,
+                       TIME_LONG_DELAY, current_batch)
 
             print()
 
         # Pause before next image send
-        time.sleep(16)
+        time.sleep(10)
 
 #####
 
@@ -306,10 +292,9 @@ def ccsds_create_packet_header(source_data_len):
 
 # Function to create a start packet for downlink
 # Format: | CCSDS Primary header | Telemetry Packet Type | Total Bytes | Total Chunks to send |
-def ccsds_create_downlink_start_packet(telemetry_packet_type, total_bytes, total_chunks, total_batch, total_images, curr_image_count):
+def ccsds_create_downlink_start_packet(telemetry_packet_type, total_bytes, total_batch):
 
     TOTAL_BYTES_LENGTH = 3  # Bytes
-    TOTAL_CHUNKS_LENGTH = 3
     TOTAL_BATCH_LENGTH = 3
     TELEMETRY_TYPE_LENGTH = 1
 
@@ -318,49 +303,33 @@ def ccsds_create_downlink_start_packet(telemetry_packet_type, total_bytes, total
 
     # Compute Source data length and create header
     source_data_len = TOTAL_BYTES_LENGTH + \
-        TOTAL_CHUNKS_LENGTH + TELEMETRY_TYPE_LENGTH
+        TOTAL_BYTES_LENGTH + TELEMETRY_TYPE_LENGTH
     ccsds_header = ccsds_create_packet_header(source_data_len)
 
     packet = packet + ccsds_header
 
     # Append bytes to packet
     packet = packet + \
-        total_images.to_bytes(1, 'big')
-
-    packet = packet + \
-        curr_image_count.to_bytes(1, 'big')
-
-    packet = packet + \
         telemetry_packet_type.to_bytes(TELEMETRY_TYPE_LENGTH, 'big')
-
     packet = packet + total_bytes.to_bytes(TOTAL_BYTES_LENGTH, 'big')
-
-    packet = packet + total_chunks.to_bytes(TOTAL_CHUNKS_LENGTH, 'big')
-
     packet = packet + total_batch.to_bytes(TOTAL_BATCH_LENGTH, 'big')
-
     return packet
 
 
 # Function to create a chunk packet for downlink
 # NOTE: Payload length should be a fixed constant (refer to top constants declared)
-def ccsds_create_downlink_chunk_packet(telemetry_packet_type, total_bytes, total_chunks, total_batch, current_batch, current_chunk, payload):
+def ccsds_create_downlink_chunk_packet(telemetry_packet_type, current_batch, current_chunk, payload):
 
-    TOTAL_BYTES_LENGTH = 3  # Bytes
-    TOTAL_CHUNKS_LENGTH = 3
-    TOTAL_BATCH_LENGTH = 3
     CURRENT_CHUNKS_LENGTH = 3
     CURRENT_BATCH_LENGTH = 3
-
     TELEMETRY_TYPE_LENGTH = 1
 
     # Packet
     packet = bytearray(0)
 
     # Compute Source data length and create header
-    source_data_len = TOTAL_BYTES_LENGTH + \
-        TOTAL_CHUNKS_LENGTH + TELEMETRY_TYPE_LENGTH + \
-        CURRENT_CHUNKS_LENGTH + len(payload)
+    source_data_len = TELEMETRY_TYPE_LENGTH + \
+        CURRENT_CHUNKS_LENGTH + CURRENT_BATCH_LENGTH + len(payload)
     ccsds_header = ccsds_create_packet_header(source_data_len)
 
     packet = packet + ccsds_header
@@ -368,15 +337,7 @@ def ccsds_create_downlink_chunk_packet(telemetry_packet_type, total_bytes, total
     # Append bytes to packet
     packet = packet + \
         telemetry_packet_type.to_bytes(TELEMETRY_TYPE_LENGTH, 'big')
-
-    packet = packet + total_bytes.to_bytes(TOTAL_BYTES_LENGTH, 'big')
-
-    packet = packet + total_chunks.to_bytes(TOTAL_CHUNKS_LENGTH, 'big')
-
-    packet = packet + total_batch.to_bytes(TOTAL_BATCH_LENGTH, 'big')
-
     packet = packet + current_batch.to_bytes(CURRENT_BATCH_LENGTH, 'big')
-
     packet = packet + current_chunk.to_bytes(CURRENT_CHUNKS_LENGTH, 'big')
 
     # Append payload bytes into packet
@@ -386,7 +347,7 @@ def ccsds_create_downlink_chunk_packet(telemetry_packet_type, total_bytes, total
 
 
 # Function to initiate a batch tx
-def batch_send(serial_obj, batch_arr, short_delay, long_delay, total_bytes_retrieved, total_chunks, total_batch, current_batch):
+def batch_send(serial_obj, batch_arr, short_delay, long_delay, current_batch):
 
     # Initiate downlink of chunk packets in the batch
     chunk_counter = 0
@@ -394,7 +355,7 @@ def batch_send(serial_obj, batch_arr, short_delay, long_delay, total_bytes_retri
 
         # Create CCSDS packet
         packet = ccsds_create_downlink_chunk_packet(
-            TELEMETRY_PACKET_TYPE_DOWNLINK_PACKET, total_bytes_retrieved, total_chunks, total_batch, current_batch, chunk_counter, batch_arr[chunk_counter])
+            TELEMETRY_PACKET_TYPE_DOWNLINK_PACKET, current_batch, chunk_counter, batch_arr[chunk_counter])
 
         print(f"Sending {chunk_counter+1} of length {len(packet)}")
         serial_obj.write(packet)
