@@ -357,7 +357,8 @@ def batch_send(serial_obj, batch_arr, short_delay, long_delay, current_batch):
         packet = ccsds_create_downlink_chunk_packet(
             TELEMETRY_PACKET_TYPE_DOWNLINK_PACKET, current_batch, chunk_counter, batch_arr[chunk_counter])
 
-        print(f"Sending {chunk_counter+1} of length {len(packet)}")
+        print(
+            f"Sending {chunk_counter+1} out of {BATCH_SIZE} of length {len(packet)}")
         serial_obj.write(packet)
 
         if chunk_counter % 100 == 0:
