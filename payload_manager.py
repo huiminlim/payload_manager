@@ -38,7 +38,7 @@ def main():
             if cmd == 'md':
 
                 mission_list = list_data_read[1:4]
-                downlink_list = list_data_read[4:]
+                downlink_start_ts = list_data_read[4]
 
                 # Mission
                 datetime_obj, num, list_ts_image = process_mission_command(
@@ -61,7 +61,7 @@ def main():
 
                 # Downlink
                 # Process all 3 timestamps
-                timestamp_start_downlink = process_timestamp(downlink_list[1])
+                timestamp_start_downlink = process_timestamp(downlink_start_ts)
                 # timestamp_query_start = process_timestamp(downlink_list[2])
                 # timestamp_query_end = process_timestamp(downlink_list[3])
 

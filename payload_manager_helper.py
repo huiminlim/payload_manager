@@ -33,10 +33,9 @@ def process_mission_command(data_read_list):
             curr_dt = curr_dt + timedelta(milliseconds=interval)
         return ls
 
-    cmd = data_read_list[0]
-    timestamp_start = data_read_list[1]
-    num = int(data_read_list[2])
-    interval = int(data_read_list[3])
+    timestamp_start = data_read_list[0]
+    num = int(data_read_list[1])
+    interval = int(data_read_list[2])
 
     print("Command: %s" % cmd)
     print("Timestamp: %s" % timestamp_start)
