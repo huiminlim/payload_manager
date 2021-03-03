@@ -107,8 +107,14 @@ def obtain_downlink_images_filepaths(mission_folder_path):
     return list_filepaths
 
 
-def download_cmd(ser_obj, filepath_list):
+def download_cmd(ser_obj, mission_folder):
     curr_img_count = 0
+
+    filepath_list = obtain_downlink_images_filepaths(
+        mission_folder)
+
+    print(f"List of images: {filepath_list}")
+
     total_img = len(filepath_list)
     for file in filepath_list:
         curr_img_count = curr_img_count + 1

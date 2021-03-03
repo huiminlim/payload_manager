@@ -68,11 +68,9 @@ def main():
                 # Obtain list of filepaths to images to downlink
                 # filepath_list = process_downlink_filepaths(
                 #     timestamp_query_start, timestamp_query_end)
-                filepath_list = obtain_downlink_images_filepaths(
-                    mission_folder_path)
 
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
-                    ser_downlink, filepath_list])
+                    ser_downlink, mission_folder])
 
         except KeyboardInterrupt:
             print("End, exiting")
