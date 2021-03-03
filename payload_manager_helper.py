@@ -84,21 +84,28 @@ def process_downlink_command(data_read_list):
 
 
 # Receive timestamp in plaintext
-def process_downlink_filepaths(start_timestamp, end_timestamp):
+# def process_downlink_filepaths(start_timestamp, end_timestamp):
+#     list_filepaths = []
+
+#     list_dir_mission = os.listdir(MISSION_ROOT_FILEPATH)
+
+#     for mission_timestamp in list_dir_mission:
+#         processed_timestamp = process_timestamp(mission_timestamp)
+#         if start_timestamp < processed_timestamp and processed_timestamp < end_timestamp:
+#             for file in os.listdir(MISSION_ROOT_FILEPATH + '/' + mission_timestamp):
+#                 list_filepaths.append(
+#                     MISSION_ROOT_FILEPATH + '/' + mission_timestamp + '/' + file)
+
+#     print(list_filepaths)
+
+#     return list_filepaths
+
+# Given mission folder path, obtain list of images path
+def obtain_downlink_images_filepaths(mission_folder_path):
     list_filepaths = []
-
-    list_dir_mission = os.listdir(MISSION_ROOT_FILEPATH)
-
-    for mission_timestamp in list_dir_mission:
-        processed_timestamp = process_timestamp(mission_timestamp)
-        if start_timestamp < processed_timestamp and processed_timestamp < end_timestamp:
-            for file in os.listdir(MISSION_ROOT_FILEPATH + '/' + mission_timestamp):
-                list_filepaths.append(
-                    MISSION_ROOT_FILEPATH + '/' + mission_timestamp + '/' + file)
-
-    print(list_filepaths)
-
-    return list_filepaths
+    for file in os.listdir(mission_folder_path):
+        list_filepaths.append(mission_folder_path + '/' + file)
+    pass
 
 
 def download_cmd(ser_obj, filepath_list):
