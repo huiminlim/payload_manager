@@ -70,7 +70,7 @@ def main():
                 #     timestamp_query_start, timestamp_query_end)
 
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
-                    ser_downlink, mission_folder])
+                    ser_downlink, mission_folder_path])
 
         except KeyboardInterrupt:
             print("End, exiting")
