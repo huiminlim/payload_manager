@@ -104,7 +104,7 @@ def obtain_downlink_images_filepaths(mission_folder_path):
     list_filepaths = []
     for file in os.listdir(mission_folder_path):
         list_filepaths.append(mission_folder_path + '/' + file)
-    pass
+    return list_filepaths
 
 
 def download_cmd(ser_obj, filepath_list):
