@@ -37,7 +37,7 @@ def process_mission_command(data_read_list):
     num = int(data_read_list[1])
     interval = int(data_read_list[2])
 
-    print("Command: %s" % cmd)
+    # print("Command: %s" % cmd)
     print("Timestamp: %s" % timestamp_start)
     print("Images to take: %s" % num)
     print("Interval (ms): %s" % interval)
