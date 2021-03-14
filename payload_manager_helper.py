@@ -10,8 +10,9 @@ CHUNK_SIZE = 179
 BATCH_SIZE = 200
 TIME_SLEEP_AFTER_START = 2
 TIME_SLEEP_AFTER_END = 1.5
-TIME_LONG_DELAY = 0.16
+TIME_LONG_DELAY = 0.12
 TIME_SHORT_DELAY = 0.098
+TIME_WAIT_BEFORE_NEXT_START = 8
 
 TELEMETRY_PACKET_TYPE_DOWNLINK_START = 30
 TELEMETRY_PACKET_TYPE_DOWNLINK_PACKET = 31
@@ -162,7 +163,7 @@ def download_cmd(ser_obj, mission_folder):
             print()
 
         # Pause before next image send
-        time.sleep(10)
+        time.sleep(TIME_WAIT_BEFORE_NEXT_START)
 
 #####
 
