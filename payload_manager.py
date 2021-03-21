@@ -26,6 +26,7 @@ def main():
 
     while True:
         try:
+            printf("Read data from serial input")
             data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
 
             list_data_read = data_read.split(" ")
