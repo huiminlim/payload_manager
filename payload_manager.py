@@ -34,24 +34,6 @@ def main():
 
             cmd = list_data_read[0]
 
-            if cmd == 'd':
-                downlink_start_ts = list_data_read[1:]
-
-                # Downlink - Process all 3 timestamps
-                timestamp_start_downlink = process_timestamp(
-                    downlink_start_ts[0])
-                timestamp_query_start = process_timestamp(downlink_start_ts[1])
-                timestamp_query_end = process_timestamp(downlink_start_ts[2])
-
-                # Obtain list of filepaths to images to downlink
-                filepath_list = process_downlink_filepaths(
-                    timestamp_query_start, timestamp_query_end)
-
-                # print(filepath_list)
-
-                scheduler.add_job(pure_download_cmd, next_run_time=timestamp_start_downlink, args=[
-                    ser_downlink, filepath_list])
-
             # Technically redundant since merged mission and downlink command
             if cmd == 'md':
 
@@ -78,7 +60,14 @@ def main():
                         camera, mission_folder_path, ts, count, num])
 
                 # Downlink
+                # Process all 3 timestamps
                 timestamp_start_downlink = process_timestamp(downlink_start_ts)
+                # timestamp_query_start = process_timestamp(downlink_list[2])
+                # timestamp_query_end = process_timestamp(downlink_list[3])
+
+                # Obtain list of filepaths to images to downlink
+                # filepath_list = process_downlink_filepaths(
+                #     timestamp_query_start, timestamp_query_end)
 
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
                     ser_downlink, mission_folder_path])
