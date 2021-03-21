@@ -76,29 +76,23 @@ def process_timestamp(timestamp):
 
 #### DOWNLINK FUNCTIONS ####
 
-def process_downlink_command(data_read_list):
-    timestamp_downlink = process_timestamp(data_read_list[1])
-    timestamp_query_start = process_timestamp(data_read_list[2])
-    timestamp_query_end = process_timestamp(data_read_list[3])
-    return [timestamp_downlink, timestamp_query_start, timestamp_query_end]
-
-
 # Receive timestamp in plaintext
-# def process_downlink_filepaths(start_timestamp, end_timestamp):
-#     list_filepaths = []
+def process_downlink_filepaths(start_timestamp, end_timestamp):
+    list_filepaths = []
 
-#     list_dir_mission = os.listdir(MISSION_ROOT_FILEPATH)
+    list_dir_mission = os.listdir(MISSION_ROOT_FILEPATH)
 
-#     for mission_timestamp in list_dir_mission:
-#         processed_timestamp = process_timestamp(mission_timestamp)
-#         if start_timestamp < processed_timestamp and processed_timestamp < end_timestamp:
-#             for file in os.listdir(MISSION_ROOT_FILEPATH + '/' + mission_timestamp):
-#                 list_filepaths.append(
-#                     MISSION_ROOT_FILEPATH + '/' + mission_timestamp + '/' + file)
+    for mission_timestamp in list_dir_mission:
+        processed_timestamp = process_timestamp(mission_timestamp)
+        if start_timestamp < processed_timestamp and processed_timestamp < end_timestamp:
+            for file in os.listdir(MISSION_ROOT_FILEPATH + '/' + mission_timestamp):
+                list_filepaths.append(
+                    MISSION_ROOT_FILEPATH + '/' + mission_timestamp + '/' + file)
 
-#     print(list_filepaths)
+    print(list_filepaths)
 
-#     return list_filepaths
+    return list_filepaths
+
 
 # Given mission folder path, obtain list of images path
 def obtain_downlink_images_filepaths(mission_folder_path):
@@ -164,6 +158,62 @@ def download_cmd(ser_obj, mission_folder):
 
         # Pause before next image send
         time.sleep(TIME_WAIT_BEFORE_NEXT_START)
+
+
+def pure_download_cmd(ser_obj, filepath_list):
+    curr_img_count = 0
+
+    print(f"List of images: {filepath_list}")
+
+    total_img = len(filepath_list)
+    for file in filepath_list:
+        curr_img_count = curr_img_count + 1
+
+        print(f"Current image count: {curr_img_count} of {total_img}")
+
+        # Call bash script to execute prep script
+        # base64 + gzip
+        prep_filepath = './prep_test.sh ' + file
+        subprocess.call(prep_filepath, stdout=subprocess.DEVNULL, shell=True)
+
+        # Open and read in the image
+        with open('base_enc.gz', 'rb') as file:
+            compressed_enc = file.read()
+            file.close()
+        total_bytes_retrieved = len(compressed_enc)
+
+        # Call bash script to remove currently created compressed files
+        subprocess.call('./cleanup.sh base_enc.gz',
+                        stdout=subprocess.DEVNULL, shell=True)
+
+        # Process the bytes into batches of chunks to be sent out
+        chunk_list = chop_bytes(compressed_enc, CHUNK_SIZE)
+
+        # Split chunks into batch according to a batch size
+        batch_list = split_batch(chunk_list, BATCH_SIZE)
+        total_batch = len(batch_list)
+
+        # Send start packet
+        start_packet = ccsds_create_downlink_start_packet(
+            TELEMETRY_PACKET_TYPE_DOWNLINK_START, total_bytes_retrieved, total_batch)
+        ser_obj.write(start_packet)
+        time.sleep(TIME_SLEEP_AFTER_START)
+
+        # Begin Batch send of chunk
+        current_batch = 1
+        for batch in batch_list:
+            print(f"BEGIN SEND: BATCH {current_batch}")
+            current_batch = current_batch + 1
+
+            # Begin batch send
+            batch_send(ser_obj, batch, TIME_SHORT_DELAY,
+                       TIME_LONG_DELAY, current_batch)
+
+            print()
+
+        # Pause before next image send
+        time.sleep(TIME_WAIT_BEFORE_NEXT_START)
+
 
 #####
 
