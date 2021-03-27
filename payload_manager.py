@@ -115,7 +115,13 @@ def main():
 
         # Fall through exception -- just in case
         except Exception as ex:
-            print(ex)
+
+            if test_run:
+                test_run = False
+
+            ser_cmd_input.write(b"bcc\r\n")
+            data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
+            no_exception = False
 
 
 if __name__ == "__main__":
