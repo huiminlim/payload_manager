@@ -7,7 +7,7 @@ import os
 data_read = ""
 no_exception = True
 ser_cmd_input = serial.Serial('/dev/serial0')
-test_run = True
+test_run = False
 
 
 def main():
