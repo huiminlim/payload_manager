@@ -38,7 +38,8 @@ def main():
         try:
 
             if test_run:
-                raise UnicodeDecodeError
+                raise UnicodeDecodeError(
+                    'funnycodec', o, 1, 2, 'This is just a fake reason!')
 
             if not test_run and no_exception:
                 print("Read data from serial input")
