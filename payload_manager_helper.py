@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from reedsolo import RSCodec
 import subprocess
 import time
 import os
@@ -140,8 +141,11 @@ def download_cmd(ser_obj, mission_folder):
         # Process the bytes into batches of chunks to be sent out
         chunk_list = chop_bytes(compressed_enc, CHUNK_SIZE)
 
+        # Reed-solomon encode each chunk
+        rs_encoded_chunk_list = rs_encode(chunk_list)
+
         # Split chunks into batch according to a batch size
-        batch_list = split_batch(chunk_list, BATCH_SIZE)
+        batch_list = split_batch(rs_encoded_chunk_list, BATCH_SIZE)
         total_batch = len(batch_list)
 
         # Send start packet
@@ -166,6 +170,11 @@ def download_cmd(ser_obj, mission_folder):
         time.sleep(TIME_WAIT_BEFORE_NEXT_START)
 
 #####
+
+
+def rs_encode(ls):
+    rsc = RSCodec(16)  # 16 ecc symbols
+    return [rsc.encode(x) for x in ls]
 
 
 # Create a CCSDS Packet Header
