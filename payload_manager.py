@@ -38,10 +38,11 @@ def main():
         try:
 
             if test_run:
+                print("Unicode decode error test")
                 raise UnicodeDecodeError(
                     'funnycodec', b'\x00\x00', 1, 2, 'This is just a fake reason!')
 
-            if not test_run and no_exception:
+            if test_run == False and no_exception:
                 print("Read data from serial input")
                 data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
 
