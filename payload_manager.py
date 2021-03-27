@@ -7,6 +7,7 @@ import os
 data_read = ""
 no_exception = True
 ser_cmd_input = serial.Serial('/dev/serial0')
+test_run = True
 
 
 def main():
@@ -14,6 +15,7 @@ def main():
     global data_read
     global no_exception
     global ser_cmd_input
+    global test_run
 
     # Initialize Scheduler in background
     scheduler = BackgroundScheduler()
@@ -34,7 +36,11 @@ def main():
 
     while True:
         try:
-            if no_exception:
+
+            if test_run:
+                raise UnicodeDecodeError
+
+            if not test_run and no_exception:
                 print("Read data from serial input")
                 data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
 
