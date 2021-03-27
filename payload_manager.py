@@ -4,8 +4,16 @@ from picamera import PiCamera
 import serial
 import os
 
+data_read = ""
+no_exception = True
+ser_cmd_input = serial.Serial('/dev/serial0')
+
 
 def main():
+
+    global data_read
+    global no_exception
+    global ser_cmd_input
 
     # Initialize Scheduler in background
     scheduler = BackgroundScheduler()
@@ -26,8 +34,9 @@ def main():
 
     while True:
         try:
-            print("Read data from serial input")
-            data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
+            if no_exception:
+                print("Read data from serial input")
+                data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
 
             list_data_read = data_read.split(" ")
 
@@ -73,6 +82,8 @@ def main():
                 scheduler.add_job(download_cmd, next_run_time=timestamp_start_downlink, args=[
                     ser_downlink, mission_folder_path])
 
+                no_exception = True
+
         except KeyboardInterrupt:
             print("End, exiting")
             scheduler.shutdown()
@@ -82,12 +93,15 @@ def main():
         except UnicodeDecodeError:
             print()
             print("Error -- unicode decode error")
-            print("Did not manage to read command")
-            print()
+            print("Request cmd again...")
+
+            ser_cmd_input.write("bcc\r\n")
+            data_read = ser_cmd_input.readline().decode("utf-8").replace("\r\n", "")
+            no_exception = False
 
         # Fall through exception -- just in case
-#         except Exception as ex:
-#             print(ex)
+        except Exception as ex:
+            print(ex)
 
 
 if __name__ == "__main__":
